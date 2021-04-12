@@ -6,31 +6,22 @@ var WebTablesPageObject = function(){
         LandingPageObject.get();
         LandingPageObject.clickWebTables();
     };
-    
-    this.deleteUser = function(name){
-        return $$('table.smart-table tr').filter(function(row) {
-            // Get the third column's text.
-            return row.$$('td').get(3).getText().then(function(rowName) {
-                // Filter rows matching the name we are looking for.
+
+    // Returns tr containing `name` username
+    this.findUserRow = function(name){
+        return $$('table.smart-table tbody tr').filter(function(row){
+            return row.$$("td").get(2).getText().then(function(rowName){
                 return rowName === name;
             });
-        }).then(function(rows) {
-            // This is an array. Find the button in the row and click on it.
-            rows[0].$('button[ng-click="delUser()"]').click();
         });
-    };
-    
-    // Returns true if the user exists, false otherwise
-    this.userExists = function(name){
-        var userExists = false;
-        $$(".table.smart-table tr").filter(function(row) {
-            return row.$$('td').get(3).getText().then(function(rowName){
-                return rowName == name;
-            });
-        }).then(function(rows){
-            if(rows.length > 0) userExists = true;
-        });
-        return userExists;
-    };
+    }
+
+    this.deleteUser = function(name){
+        var userRow = this.findUserRow(name);
+        userRow.$$("td").last().$("button").click();
+        var EC = protractor.ExpectedConditions;
+        browser.wait(EC.elementToBeClickable($$(".modal-footer button").get(1)), 5000);
+        $$(".modal-footer button").get(1).click();
+    }
 }
 module.exports = new WebTablesPageObject();
